@@ -8,17 +8,29 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSceneUrl } from "@/lib/vdo-ninja";
 
-const HOST_PASSWORD = process.env.NEXT_PUBLIC_HOST_PASSWORD || "quarta2025";
-
 export default function HostPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === HOST_PASSWORD) {
+    setLoading(true);
+    setError("");
+
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+
+    if (res.ok) {
       setAuthenticated(true);
+    } else {
+      setError("Senha incorreta");
     }
+    setLoading(false);
   }
 
   if (!authenticated) {
@@ -36,8 +48,11 @@ export default function HostPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <Button type="submit" className="w-full">
-                Entrar
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Verificando..." : "Entrar"}
               </Button>
             </form>
           </CardContent>
