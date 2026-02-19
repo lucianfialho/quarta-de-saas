@@ -1,17 +1,17 @@
-import { getParticipantUrl, getDirectorUrl, getSceneUrl } from "../vdo-ninja";
+import { getParticipantUrl, getSoloViewUrl, getDirectorUrl, getSceneUrl } from "../vdo-ninja";
 
 describe("vdo-ninja URL helpers", () => {
   describe("getParticipantUrl", () => {
-    it("generates correct participant URL with encoded name", () => {
+    it("generates correct participant URL with push stream ID and encoded label", () => {
       const url = getParticipantUrl("João Silva");
-      expect(url).toBe(
-        "https://vdo.ninja/?room=quarta_de_saas_live&queue&mini&maxframerate=30&ln=pt-br&retry&webcam&label=Jo%C3%A3o%20Silva"
-      );
+      expect(url).toContain("push=joo_silva");
+      expect(url).toContain("label=Jo%C3%A3o%20Silva");
     });
 
     it("trims whitespace from name", () => {
       const url = getParticipantUrl("  Ana  ");
       expect(url).toContain("label=Ana");
+      expect(url).toContain("push=ana");
     });
 
     it("includes all required VDO.Ninja params", () => {
@@ -23,6 +23,21 @@ describe("vdo-ninja URL helpers", () => {
       expect(url).toContain("&ln=pt-br");
       expect(url).toContain("&retry");
       expect(url).toContain("&webcam");
+    });
+  });
+
+  describe("getSoloViewUrl", () => {
+    it("generates correct solo view URL from name", () => {
+      const url = getSoloViewUrl("João Silva");
+      expect(url).toBe(
+        "https://vdo.ninja/?view=joo_silva&solo&room=quarta_de_saas_live"
+      );
+    });
+
+    it("generates view URL with sanitized stream ID", () => {
+      const url = getSoloViewUrl("Ana Maria");
+      expect(url).toContain("view=ana_maria");
+      expect(url).toContain("&solo");
     });
   });
 
