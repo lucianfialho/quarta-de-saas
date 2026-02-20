@@ -38,7 +38,7 @@ describe("vdo-ninja URL helpers", () => {
     it("generates correct director URL", () => {
       const url = getDirectorUrl();
       expect(url).toBe(
-        "https://vdo.ninja/?director=quarta_de_saas_live&showdirector&queue&notify&ln=pt-br"
+        "https://vdo.ninja/?director=quarta_de_saas_live&showdirector&notify&ln=pt-br"
       );
     });
 

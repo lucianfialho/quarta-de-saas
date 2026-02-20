@@ -91,10 +91,10 @@ export default function HostPage() {
                 <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1.5">
                   <li>No OBS, adicione sua <strong className="text-foreground">webcam como fonte separada</strong> (Video Capture Device)</li>
                   <li>Participante entra e fica na <strong className="text-foreground">fila (queue)</strong></li>
-                  <li>No Director, <strong className="text-foreground">arraste o participante para a cena</strong> (Add to Scene)</li>
-                  <li>Só depois disso o vídeo do participante aparece no OBS</li>
+                  <li>No Director, clique <strong className="text-foreground">&quot;Activate Guest&quot;</strong> quando for a vez dele</li>
+                  <li>O vídeo aparece no OBS automaticamente</li>
                   <li>Inicie o timer de 5 min</li>
-                  <li>Quando acabar, remova da cena e arraste o próximo</li>
+                  <li>Quando acabar, remova o participante e ative o próximo</li>
                 </ol>
               </CardContent>
             </Card>

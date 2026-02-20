@@ -18,7 +18,7 @@ export function getParticipantUrl(name: string): string {
 }
 
 export function getDirectorUrl(): string {
-  return `${VDO_NINJA_BASE}/?director=${ROOM_NAME}&showdirector&queue&notify&ln=pt-br`;
+  return `${VDO_NINJA_BASE}/?director=${ROOM_NAME}&showdirector&notify&ln=pt-br`;
 }
 
 export function getSceneUrl(): string {
