@@ -1,17 +1,25 @@
-import { getParticipantUrl, getSoloViewUrl, getDirectorUrl, getSceneUrl } from "../vdo-ninja";
+import { getParticipantUrl, getDirectorUrl, getSceneUrl } from "../vdo-ninja";
 
 describe("vdo-ninja URL helpers", () => {
   describe("getParticipantUrl", () => {
-    it("generates correct participant URL with push stream ID and encoded label", () => {
+    it("generates URL with push stream ID based on name plus random suffix", () => {
       const url = getParticipantUrl("João Silva");
-      expect(url).toContain("push=joo_silva");
+      expect(url).toMatch(/push=joo_silva_[a-z0-9]{3}/);
       expect(url).toContain("label=Jo%C3%A3o%20Silva");
+    });
+
+    it("generates unique stream IDs for same name", () => {
+      const url1 = getParticipantUrl("Ana Maria");
+      const url2 = getParticipantUrl("Ana Maria");
+      const id1 = url1.match(/push=([^&]+)/)![1];
+      const id2 = url2.match(/push=([^&]+)/)![1];
+      expect(id1).not.toBe(id2);
     });
 
     it("trims whitespace from name", () => {
       const url = getParticipantUrl("  Ana  ");
       expect(url).toContain("label=Ana");
-      expect(url).toContain("push=ana");
+      expect(url).toMatch(/push=ana_[a-z0-9]{3}/);
     });
 
     it("includes all required VDO.Ninja params", () => {
@@ -23,21 +31,6 @@ describe("vdo-ninja URL helpers", () => {
       expect(url).toContain("&ln=pt-br");
       expect(url).toContain("&retry");
       expect(url).toContain("&webcam");
-    });
-  });
-
-  describe("getSoloViewUrl", () => {
-    it("generates correct solo view URL from name", () => {
-      const url = getSoloViewUrl("João Silva");
-      expect(url).toBe(
-        "https://vdo.ninja/?view=joo_silva&solo&room=quarta_de_saas_live"
-      );
-    });
-
-    it("generates view URL with sanitized stream ID", () => {
-      const url = getSoloViewUrl("Ana Maria");
-      expect(url).toContain("view=ana_maria");
-      expect(url).toContain("&solo");
     });
   });
 
