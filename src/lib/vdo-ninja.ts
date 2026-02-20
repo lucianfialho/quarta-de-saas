@@ -22,5 +22,5 @@ export function getDirectorUrl(): string {
 }
 
 export function getSceneUrl(): string {
-  return `${VDO_NINJA_BASE}/?scene&room=${ROOM_NAME}&cleanoutput`;
+  return `${VDO_NINJA_BASE}/?scene=0&room=${ROOM_NAME}&codec=h264&cleanoutput&nocontrols`;
 }

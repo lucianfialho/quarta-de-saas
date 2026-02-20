@@ -54,13 +54,16 @@ describe("vdo-ninja URL helpers", () => {
     it("generates correct scene URL for OBS", () => {
       const url = getSceneUrl();
       expect(url).toBe(
-        "https://vdo.ninja/?scene&room=quarta_de_saas_live&cleanoutput"
+        "https://vdo.ninja/?scene=0&room=quarta_de_saas_live&codec=h264&cleanoutput&nocontrols"
       );
     });
 
-    it("includes cleanoutput for OBS usage", () => {
+    it("includes OBS-optimized params", () => {
       const url = getSceneUrl();
       expect(url).toContain("&cleanoutput");
+      expect(url).toContain("&codec=h264");
+      expect(url).toContain("&nocontrols");
+      expect(url).toContain("scene=0");
     });
   });
 });

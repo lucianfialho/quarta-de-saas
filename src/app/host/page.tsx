@@ -82,6 +82,23 @@ export default function HostPage() {
           <div className="space-y-6">
             <PitchTimer />
 
+            {/* Queue flow instructions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Fluxo do Pitch</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1.5">
+                  <li>No OBS, adicione sua <strong className="text-foreground">webcam como fonte separada</strong> (Video Capture Device)</li>
+                  <li>Participante entra e fica na <strong className="text-foreground">fila (queue)</strong></li>
+                  <li>No Director, <strong className="text-foreground">arraste o participante para a cena</strong> (Add to Scene)</li>
+                  <li>Só depois disso o vídeo do participante aparece no OBS</li>
+                  <li>Inicie o timer de 5 min</li>
+                  <li>Quando acabar, remova da cena e arraste o próximo</li>
+                </ol>
+              </CardContent>
+            </Card>
+
             {/* OBS Scene URL */}
             <Card>
               <CardHeader>
@@ -109,6 +126,7 @@ export default function HostPage() {
                     <li>Cole o link acima na URL</li>
                     <li>Largura: 1920, Altura: 1080</li>
                     <li>Marque &quot;Controlar áudio via OBS&quot;</li>
+                    <li>Em Settings &gt; Advanced, teste ligar/desligar &quot;Browser Source Hardware Acceleration&quot;</li>
                   </ol>
                 </div>
               </CardContent>
