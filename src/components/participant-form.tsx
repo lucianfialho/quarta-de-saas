@@ -7,9 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getParticipantUrl } from "@/lib/vdo-ninja";
 
-export function ParticipantForm() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+interface ParticipantFormProps {
+  defaultName?: string;
+  pitch?: {
+    saasName: string;
+    tagline: string;
+  };
+}
+
+export function ParticipantForm({ defaultName, pitch }: ParticipantFormProps) {
+  const nameParts = (defaultName ?? "").split(" ");
+  const [firstName, setFirstName] = useState(nameParts[0] ?? "");
+  const [lastName, setLastName] = useState(
+    nameParts.slice(1).join(" ") || ""
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +34,9 @@ export function ParticipantForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-xl">Entrar na fila</CardTitle>
+        <CardTitle className="text-xl">
+          {pitch ? "Entrar na fila" : "Entrar na fila"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

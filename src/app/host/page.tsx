@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PitchTimer } from "@/components/pitch-timer";
+import { PitchList } from "@/components/pitch-list";
 import { VdoDirector } from "@/components/vdo-director";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,9 @@ export default function HostPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Painel do Host</h1>
         </div>
+
+        {/* Pitch list */}
+        <PitchList />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           {/* Director */}

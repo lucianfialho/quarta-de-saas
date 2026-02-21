@@ -57,4 +57,19 @@ describe("ParticipantForm", () => {
 
     expect(mockGetParticipantUrl).toHaveBeenCalledWith("João Silva");
   });
+
+  it("pre-fills name fields from defaultName prop", () => {
+    render(<ParticipantForm defaultName="Maria Santos" />);
+
+    expect(screen.getByLabelText("Nome")).toHaveValue("Maria");
+    expect(screen.getByLabelText("Sobrenome")).toHaveValue("Santos");
+  });
+
+  it("enables button when defaultName is provided", () => {
+    render(<ParticipantForm defaultName="Maria Santos" />);
+
+    expect(
+      screen.getByRole("button", { name: "Entrar na fila" })
+    ).toBeEnabled();
+  });
 });
