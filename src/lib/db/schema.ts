@@ -1,64 +1,35 @@
 import {
   pgTable,
+  pgSchema,
   text,
   timestamp,
-  primaryKey,
-  integer,
   pgEnum,
   uuid,
+  boolean,
+  unique,
 } from "drizzle-orm/pg-core";
-import type { AdapterAccountType } from "next-auth/adapters";
+import { sql } from "drizzle-orm";
 
-// --- NextAuth required tables ---
+// --- Neon Auth schema reference ---
 
-export const users = pgTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").unique(),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
-  image: text("image"),
-});
+const neonAuth = pgSchema("neon_auth");
 
-export const accounts = pgTable(
-  "accounts",
+export const userInNeonAuth = neonAuth.table(
+  "user",
   {
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccountType>().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    name: text().notNull(),
+    email: text().notNull(),
+    emailVerified: boolean().notNull(),
+    image: text(),
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true, mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
-  (account) => [
-    primaryKey({ columns: [account.provider, account.providerAccountId] }),
-  ]
-);
-
-export const sessions = pgTable("sessions", {
-  sessionToken: text("sessionToken").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
-
-export const verificationTokens = pgTable(
-  "verificationTokens",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
+  (table) => [unique("user_email_key").on(table.email)]
 );
 
 // --- Application tables ---
@@ -72,9 +43,9 @@ export const stageEnum = pgEnum("stage", [
 
 export const pitches = pgTable("pitches", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => userInNeonAuth.id),
   saasName: text("saas_name").notNull(),
   url: text("url"),
   tagline: text("tagline").notNull(),

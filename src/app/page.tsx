@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { authClient } from "@/lib/auth/client";
 
 export default function Home() {
   const [progress, setProgress] = useState(0);
@@ -19,7 +19,12 @@ export default function Home() {
 
   function handleLogin() {
     playDing();
-    signIn("github", { callbackUrl: "/participar" });
+    setTimeout(() => {
+      authClient.signIn.social({
+        provider: "github",
+        callbackURL: "/onboarding",
+      });
+    }, 800);
   }
 
   useEffect(() => {
@@ -34,22 +39,30 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Phase 1: Zoom into elevator (0 → 0.25) — slow entrance
-  const zoomP = easeOutCubic(clamp(progress / 0.25));
+  // Phase 1: Zoom into elevator (0 → 0.15)
+  const zoomP = easeOutCubic(clamp(progress / 0.15));
   const compositionScale = 1 + zoomP * 4.5;
-  const textFade = 1 - easeInCubic(clamp(progress / 0.10));
-  const bottomFade = 1 - easeInCubic(clamp(progress / 0.07));
-  const doorOpen = easeOutCubic(clamp(progress / 0.20));
-  const glowIntensity = easeOutCubic(clamp(progress / 0.25));
-  const frameOpacity = 1 - easeInCubic(clamp((progress - 0.06) / 0.14));
+  const textFade = 1 - easeInCubic(clamp(progress / 0.06));
+  const bottomFade = 1 - easeInCubic(clamp(progress / 0.04));
+  const doorOpen = easeOutCubic(clamp(progress / 0.12));
+  const glowIntensity = easeOutCubic(clamp(progress / 0.15));
+  const frameOpacity = 1 - easeInCubic(clamp((progress - 0.04) / 0.1));
 
   // Phase 2-4: Floor content (each floor: fade in → hold → fade out)
-  const floor1 = floorAnim(progress, 0.38, 0.14);
-  const floor2 = floorAnim(progress, 0.55, 0.14);
-  const floor3 = floorAnim(progress, 0.72, 0.14);
+  const floor1 = floorAnim(progress, 0.24, 0.14);
+  const floor2 = floorAnim(progress, 0.42, 0.14);
+  const floor3 = floorAnim(progress, 0.60, 0.14);
 
-  // Phase 5: Final CTA (0.85 → 1.0)
-  const finalFade = easeOutCubic(clamp((progress - 0.85) / 0.12));
+  // Phase 5: Final CTA (0.72 → 1.0)
+  const finalFade = easeOutCubic(clamp((progress - 0.72) / 0.12));
+
+  // Floor indicator inside elevator
+  const floorIndicatorOpacity = easeOutCubic(clamp((progress - 0.15) / 0.08));
+  const currentFloor =
+    progress < 0.14 ? "T" :
+    progress < 0.33 ? "1F" :
+    progress < 0.50 ? "2F" :
+    progress < 0.65 ? "3F" : "4F";
 
   return (
     <div className="bg-[#111] text-white">
@@ -235,7 +248,7 @@ export default function Home() {
                               textShadow: "0 0 8px rgba(180, 140, 60, 0.6)",
                             }}
                           >
-                            4F
+                            T
                           </span>
                         </div>
                       </div>
@@ -246,16 +259,16 @@ export default function Home() {
                       className="absolute -right-8 sm:-right-10 top-1/2 -translate-y-1/2 flex flex-col gap-2 sm:gap-3"
                       style={{ opacity: bottomFade }}
                     >
-                      {["5", "4", "3", "2", "1"].map((f) => (
+                      {["4", "3", "2", "1"].map((f) => (
                         <div
                           key={f}
                           className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-mono border ${
-                            f === "4"
+                            f === "1"
                               ? "border-amber-600/60 text-amber-400 bg-amber-900/20"
                               : "border-white/10 text-white/25 bg-white/[0.02]"
                           }`}
                           style={
-                            f === "4"
+                            f === "1"
                               ? { boxShadow: "0 0 6px rgba(180, 140, 60, 0.3)" }
                               : {}
                           }
@@ -303,20 +316,12 @@ export default function Home() {
             </div>
             <button
               onClick={handleLogin}
-              className="group inline-flex items-center gap-2 sm:gap-3 bg-white text-[#111] px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium hover:bg-white/90 transition-colors mx-auto sm:mx-0 cursor-pointer"
+              className="inline-flex items-center gap-2 sm:gap-3 bg-white text-[#111] px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium hover:bg-white/90 transition-colors mx-auto sm:mx-0 cursor-pointer"
             >
-              Cadastrar seu pitch
-              <span className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#111] text-white">
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M2 10L10 2M10 2H4M10 2V8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
+              <svg className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
+              Entrar com GitHub
             </button>
             <span className="hidden sm:inline uppercase tracking-[0.2em] text-xs text-white/30">
               Apresente seu SaaS
@@ -324,6 +329,31 @@ export default function Home() {
           </div>
 
           {/* ══════ OVERLAY CONTENT (inside the elevator) ══════ */}
+
+          {/* Floor indicator */}
+          <div
+            className="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            style={{ opacity: floorIndicatorOpacity }}
+          >
+            <div
+              className="px-5 py-2 sm:px-6 sm:py-2.5 rounded-lg text-center"
+              style={{
+                background: "linear-gradient(180deg, rgba(30,28,22,0.9), rgba(20,18,14,0.95))",
+                boxShadow: "0 0 20px rgba(180, 140, 60, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <span
+                className="text-lg sm:text-xl font-mono tracking-widest font-bold"
+                style={{
+                  color: "#c9a84c",
+                  textShadow: "0 0 12px rgba(180, 140, 60, 0.8)",
+                }}
+              >
+                {currentFloor}
+              </span>
+            </div>
+          </div>
 
           {/* Floor 1 */}
           <div
@@ -341,14 +371,14 @@ export default function Home() {
                 1F
               </span>
               <p className="text-5xl sm:text-6xl lg:text-7xl font-bold italic leading-[0.95] tracking-tight">
-                Cadastre
+                Crie sua
                 <br />
-                <span className="text-white/40">seu pitch</span>
+                <span className="text-white/40">conta</span>
               </p>
               <div className="w-8 h-[2px] bg-white/20 mx-auto my-4 sm:my-6" />
               <p className="text-sm sm:text-base text-white/40 leading-relaxed max-w-xs mx-auto">
-                Login com GitHub, nome do SaaS,
-                elevator pitch e estágio atual.
+                Entre com GitHub em um clique.
+                Rápido, sem formulário.
               </p>
             </div>
           </div>
@@ -369,14 +399,14 @@ export default function Home() {
                 2F
               </span>
               <p className="text-5xl sm:text-6xl lg:text-7xl font-bold italic leading-[0.95] tracking-tight">
-                Entre
+                Cadastre
                 <br />
-                <span className="text-white/40">na fila</span>
+                <span className="text-white/40">sua ideia</span>
               </p>
               <div className="w-8 h-[2px] bg-white/20 mx-auto my-4 sm:my-6" />
               <p className="text-sm sm:text-base text-white/40 leading-relaxed max-w-xs mx-auto">
-                Quando estiver pronto, entre ao vivo.
-                Sua câmera fica em miniatura enquanto espera.
+                No painel, registre seu SaaS:
+                nome, tagline e estágio.
               </p>
             </div>
           </div>
@@ -397,14 +427,14 @@ export default function Home() {
                 3F
               </span>
               <p className="text-5xl sm:text-6xl lg:text-7xl font-bold italic leading-[0.95] tracking-tight">
-                5 minutos
+                Entre
                 <br />
-                <span className="text-white/40">ao vivo</span>
+                <span className="text-white/40">na fila</span>
               </p>
               <div className="w-8 h-[2px] bg-white/20 mx-auto my-4 sm:my-6" />
               <p className="text-sm sm:text-base text-white/40 leading-relaxed max-w-xs mx-auto">
-                As portas abrem e é sua vez. Apresente,
-                receba feedback e conecte com a comunidade.
+                Quando for sua vez, as portas abrem.
+                5 minutos ao vivo pra apresentar.
               </p>
             </div>
           </div>

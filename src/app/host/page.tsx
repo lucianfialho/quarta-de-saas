@@ -20,7 +20,7 @@ export default function HostPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/auth", {
+    const res = await fetch("/api/host-auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),

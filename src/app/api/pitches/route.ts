@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db";
-import { pitches, users } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { pitches } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
+  const { data: session } = await auth.getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
@@ -48,11 +48,9 @@ export async function GET() {
       tagline: pitches.tagline,
       stage: pitches.stage,
       createdAt: pitches.createdAt,
-      userName: users.name,
-      userImage: users.image,
+      userId: pitches.userId,
     })
     .from(pitches)
-    .leftJoin(users, eq(pitches.userId, users.id))
     .orderBy(desc(pitches.createdAt));
 
   return NextResponse.json(allPitches);

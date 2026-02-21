@@ -1,109 +1,87 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db";
 import { pitches } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { ParticipantForm } from "@/components/participant-form";
-import { PitchRegistrationForm } from "@/components/pitch-registration-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ProjectList } from "@/components/project-list";
 
 export const metadata = {
   title: "Participar | Quarta de SaaS",
 };
 
-const STAGE_LABELS: Record<string, string> = {
-  idea: "Ideia",
-  mvp: "MVP",
-  launched: "Lançado",
-  traction: "Em tração",
-};
-
 export default async function ParticiparPage() {
-  const session = await auth();
+  const { data: session } = await auth.getSession();
 
-  if (!session) {
-    redirect("/login");
+  if (!session?.user) {
+    redirect("/auth/sign-in");
   }
 
-  const [userPitch] = await db
+  const userPitches = await db
     .select()
     .from(pitches)
     .where(eq(pitches.userId, session.user.id))
-    .orderBy(desc(pitches.createdAt))
-    .limit(1);
+    .orderBy(desc(pitches.createdAt));
 
-  const defaultName = session.user.name ?? "";
+  const userName = session.user.name ?? "";
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <Link
-        href="/"
-        className="text-sm text-muted-foreground hover:text-foreground mb-8"
-      >
-        &larr; Voltar
-      </Link>
+    <div className="min-h-screen bg-[#111] text-white flex flex-col items-center px-4 py-12 relative overflow-hidden">
+      {/* Subtle golden ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 30%, rgba(200, 165, 70, 0.06) 0%, transparent 70%)",
+        }}
+      />
 
-      <h1 className="text-3xl font-bold mb-2">Participar</h1>
-      <p className="text-muted-foreground mb-8 text-center max-w-md">
-        {userPitch
-          ? "Seu pitch está cadastrado! Quando estiver pronto, entre na fila."
-          : "Cadastre seu SaaS antes de entrar na fila."}
-      </p>
+      {/* Header */}
+      <div className="relative z-10 w-full max-w-lg mb-10">
+        <Link
+          href="/"
+          className="text-sm text-white/40 hover:text-white/60 transition-colors"
+        >
+          &larr; Voltar
+        </Link>
+      </div>
 
-      {userPitch ? (
-        <>
-          {/* Pitch summary */}
-          <Card className="w-full max-w-md mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                {userPitch.saasName}
-                <Badge variant="secondary">
-                  {STAGE_LABELS[userPitch.stage] ?? userPitch.stage}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {userPitch.tagline}
-              </p>
-              {userPitch.url && (
-                <a
-                  href={userPitch.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-500 underline"
-                >
-                  {userPitch.url}
-                </a>
-              )}
-            </CardContent>
-          </Card>
+      <div className="relative z-10 w-full max-w-lg mb-8">
+        <h1 className="text-2xl font-bold text-white/90">Seus projetos</h1>
+        <p className="text-sm text-white/40 mt-1">
+          Gerencie seus SaaS e entre na fila quando estiver pronto.
+        </p>
+      </div>
 
-          {/* Instructions */}
-          <div className="mb-8 max-w-md w-full space-y-2 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Antes de entrar:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Use fones de ouvido para evitar eco</li>
-              <li>Se estiver no celular, use na horizontal</li>
-              <li>Fique em um ambiente silencioso</li>
-              <li>Tenha sua apresentação pronta (5 minutos)</li>
-            </ul>
-          </div>
-
-          <ParticipantForm
-            defaultName={defaultName}
-            pitch={{
-              saasName: userPitch.saasName,
-              tagline: userPitch.tagline,
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-lg">
+        {userPitches.length > 0 ? (
+          <ProjectList pitches={userPitches} userName={userName} />
+        ) : (
+          <div
+            className="rounded-2xl p-10 text-center"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
             }}
-          />
-        </>
-      ) : (
-        <PitchRegistrationForm />
-      )}
-    </main>
+          >
+            <p className="text-white/50 mb-1">Nenhum projeto ainda</p>
+            <p className="text-sm text-white/30 mb-6">
+              Cadastre seu SaaS para participar do Quarta de SaaS.
+            </p>
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-colors"
+              style={{
+                backgroundColor: "#c9a84c",
+                color: "#111",
+              }}
+            >
+              Cadastrar projeto
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
